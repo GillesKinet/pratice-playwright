@@ -6,14 +6,22 @@ require('dotenv').config()
 export default defineConfig<TestOptions>({
   testDir: './tests',
   retries: 1,
-  reporter: [['json', {outputFile: 'test-results/jsonReport.json'}], ['html']],
+  reporter: [
+    process.env.CI ? ["dot"] : ["list"],
+    [
+      "@argos-ci/playwright/reporter",{
+      // Upload only on CI.
+      uploadToArgos: !!process.env.CI}
+    ],
+    ['json', {outputFile: 'test-results/jsonReport.json'}], ['html']],
 
   use: {
     globalsQaURL:'https://www.globalsqa.com/demo-site/draganddrop/',
     baseURL: process.env.DEV==='1' ? 'http://localhost:4200/'
            : process.env.STAGING == '1' ? 'http://localhost:4202/'
            : 'http://localhost:4200/',
-    trace: 'on-first-retry'
+    trace: 'on-first-retry',
+    screenshot: "only-on-failure"
   },
 
   projects: [
